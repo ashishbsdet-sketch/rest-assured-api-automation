@@ -32,17 +32,28 @@ jobs:
           cache: maven
 
       - name: Run TestNG suite
+        id: api_tests
+        continue-on-error: true
         env:
           BASE_URL: https://jsonplaceholder.typicode.com
         run: mvn --batch-mode --no-transfer-progress clean test
+
+      - name: Publish test counts
+        id: test_summary
+        if: always()
+        run: python3 .github/scripts/publish_test_summary.py
 
       - name: Upload TestNG results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: testng-results-${{ github.run_number }}
-          path: |
-            target/surefire-reports/
-            test-output/
+          path: target/surefire-reports/
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Fail workflow when tests fail
+        if: steps.api_tests.outcome == 'failure'
+        run: |
+          echo "::error title=Regression failed::${{ steps.test_summary.outputs.failed }} failed, ${{ steps.test_summary.outputs.passed }} passed"
+          exit 1
