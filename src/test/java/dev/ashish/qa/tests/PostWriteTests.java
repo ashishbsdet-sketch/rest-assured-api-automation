@@ -1,10 +1,10 @@
 package dev.ashish.qa.tests;
 
-import static dev.ashish.qa.specs.ApiSpecifications.defaultRequest;
 import static dev.ashish.qa.specs.ApiSpecifications.successfulJsonResponse;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
+import dev.ashish.qa.clients.PostsClient;
 import dev.ashish.qa.models.PostRequest;
 import dev.ashish.qa.models.PostResponse;
 import java.util.Map;
@@ -12,6 +12,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class PostWriteTests {
+    private final PostsClient posts = new PostsClient();
+
     @Test(groups = {"smoke", "regression"})
     public void createsPostFromTypedPayload() {
         PostRequest request = new PostRequest(
@@ -20,10 +22,7 @@ public class PostWriteTests {
                 "Validate the service contract before release"
         );
 
-        PostResponse created = defaultRequest()
-                .body(request)
-                .when()
-                .post("/posts")
+        PostResponse created = posts.createPost(request)
                 .then()
                 .spec(successfulJsonResponse(201))
                 .body("id", notNullValue())
@@ -43,11 +42,7 @@ public class PostWriteTests {
                 "The full resource has been replaced"
         );
 
-        defaultRequest()
-                .pathParam("postId", 10)
-                .body(replacement)
-                .when()
-                .put("/posts/{postId}")
+        posts.replacePost(10, replacement)
                 .then()
                 .spec(successfulJsonResponse(200))
                 .body("id", equalTo(10))
@@ -58,11 +53,7 @@ public class PostWriteTests {
 
     @Test(groups = "regression")
     public void updatesOneFieldWithoutReplacingTheResource() {
-        defaultRequest()
-                .pathParam("postId", 12)
-                .body(Map.of("title", "Reviewed by QA"))
-                .when()
-                .patch("/posts/{postId}")
+        posts.updatePost(12, Map.of("title", "Reviewed by QA"))
                 .then()
                 .spec(successfulJsonResponse(200))
                 .body("id", equalTo(12))
@@ -72,10 +63,7 @@ public class PostWriteTests {
 
     @Test(groups = "regression")
     public void deletesExistingPost() {
-        defaultRequest()
-                .pathParam("postId", 15)
-                .when()
-                .delete("/posts/{postId}")
+        posts.deletePost(15)
                 .then()
                 .spec(successfulJsonResponse(200))
                 .body("$", equalTo(Map.of()));
