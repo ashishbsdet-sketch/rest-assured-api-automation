@@ -21,7 +21,7 @@ JSONPlaceholder simulates write operations rather than saving data permanently, 
 
 ```text
 .
-├── .github/                  # CI, dependency updates and PR template
+├── .github/                  # CI, test-summary script and PR template
 ├── docs/
 │   └── TEST_STRATEGY.md      # Scope, risks and quality gates
 ├── src/test/java/dev/ashish/qa/
@@ -73,7 +73,9 @@ The detailed scope, risks and merge gates are documented in [the test strategy](
 
 ## Reports and CI
 
-Maven Surefire produces TestNG and JUnit-compatible results under `target/surefire-reports/`. GitHub Actions runs the suite on every pull request and push to `main`, then retains the reports as downloadable artifacts.
+GitHub Actions runs the complete suite on every pull request and push to `main`. The workflow summary displays the total, passed, failed, skipped and duration values even when Maven reports a failure. The workflow then remains red if any test fails, so publishing the summary never hides a broken build.
+
+Detailed TestNG and JUnit-compatible reports are retained under the workflow's **Artifacts** section for 14 days.
 
 ## Configuration
 
